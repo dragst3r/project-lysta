@@ -1,6 +1,5 @@
 import test from './importtest.js'
 
-console.log(test)
 const recipes = [
     {
         dishName: 'Szakszuka z bazylią',
@@ -53,18 +52,16 @@ const recipes = [
     }
 ];
 var listItems = [];
-
-const load = () => {
-    let btn = document.getElementById('btn');
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('btn').addEventListener("click", getValue);
     generateHTMLRecipesList(recipes);
-    btn.addEventListener("click", getValue)
-};
+}, false);
 
 const getValue = () => {
     let inputField = document.getElementById('input');
     let inputValue = inputField.value
     inputField.value = ''
-    if (inputValue !== '') addToList({ name: inputValue, quantity: 1 },'input field'); generateHTMLList();
+    if (inputValue !== '') addToList({ name: inputValue, quantity: 1 }, 'input field')
 };
 
 //Function for adding items to listItems array
@@ -75,16 +72,20 @@ const addToList = (item, recipe) => {
         source: recipe
     };
     let itemAdded = false;
-    for (i of listItems) {
+    for (const i of listItems) {
         if (i.name === itemToAdd.name) {
             i.quantityTotal += itemToAdd.quantity;
             i.items.push(itemToAdd)
             itemAdded = true
+            updateListItem(i)
             break
         }
     };
     const itemToAddFirstTime = { name: itemToAdd.name, quantityTotal: itemToAdd.quantity || 0, items: [itemToAdd] }
-    if (!itemAdded) listItems.push(itemToAddFirstTime)
+    if (!itemAdded) {
+        listItems.push(itemToAddFirstTime);
+        createListItem(itemToAddFirstTime)
+    }
 };
 
 //Create button for recipes list
@@ -93,7 +94,7 @@ const createRecipesButton = (recipe) => {
     recipesButton.innerText = '+';
     recipesButton.key = recipe.dishName;
     recipesButton.addEventListener("click", () => {
-        massAddToList(recipesButton.key)
+        addListItemsFromRecipe(recipesButton.key)
     });
     return recipesButton
 };
@@ -104,6 +105,26 @@ const createRecipesP = (recipe) => {
     recipe.id = recipe.dishName;
     return recipesP
 };
+const listElement = document.getElementById('list');
+const addItemToHTMLList = (item) => {
+    listElement.appendChild(item)
+}
+
+const updateListItem = ({ name, quantityTotal }) => {
+    document.getElementById(name).children[0].innerText = quantityTotal
+}
+
+const createListItem = ({ name, quantityTotal }) => {
+    const newListItem = document.createElement('div');
+    newListItem.innerText = name;
+    newListItem.id = name;
+    newListItem.className = 'shopping-item'
+    const newListItemQuantity = document.createElement('span');
+    newListItemQuantity.innerText = quantityTotal;
+    newListItemQuantity.className = 'quantityTotal';
+    newListItem.appendChild(newListItemQuantity);
+    addItemToHTMLList(newListItem)
+}
 
 const generateHTMLRecipesList = (recipes) => {
     const recipesDiv = document.getElementById('recipes');
@@ -117,15 +138,13 @@ const generateHTMLRecipesList = (recipes) => {
     document.getElementById("recipes-container").appendChild(recipesDiv)
 };
 
-const generateHTMLList = () => {
-    document.getElementById('list').innerHTML = listItems.map(e => `<p key=${e.name} style="border: 1px solid red; width: 250px">${e.name} - quantity: ${e.quantityTotal}</p>`).join('')
-};
+
 //Function for adding all ingridiens for selected recepie
-const massAddToList = (btnKey) => {
+const addListItemsFromRecipe = (btnKey) => {
     let recipe = recipes.filter(r => r.dishName === btnKey);
     const recipeSelect = recipe[0]
     recipeSelect.ingridiens.map(i => addToList(i, recipeSelect._id))
-    generateHTMLList()
+
 };
 
 /*
