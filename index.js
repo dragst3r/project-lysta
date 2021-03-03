@@ -1,3 +1,6 @@
+import test from './importtest.js'
+
+console.log(test)
 const recipes = [
     {
         dishName: 'Szakszuka z bazylią',
